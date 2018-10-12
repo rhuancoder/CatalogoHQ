@@ -44,7 +44,7 @@ namespace CatalogoHQ
             }
             else
             {
-                app.UseExceptionHandler("/Home/Error");
+                app.UseExceptionHandler("/Index/Error");
                 app.UseHsts();
             }
 
@@ -56,7 +56,7 @@ namespace CatalogoHQ
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    template: "{controller=Index}/{action=Index}/{id?}");
             });
         }
     }
