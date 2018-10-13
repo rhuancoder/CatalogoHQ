@@ -1,7 +1,15 @@
 ﻿
 @{
     ViewData["Title"] = "Index";
+    Personagem personagem = (Personagem)ViewBag.Personagem;
 }
 
-<h2>Index</h2>
+<div>
+    <div class="editor-label">
+        Personagens
+    </div>
+    <div class="editor-field">
+        @Html.DropDownList("Personagens")
+    </div>
+</div>
 

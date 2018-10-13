@@ -1,20 +1,23 @@
 ﻿using CatalogoHQ.Models;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Configuration;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace CatalogoHQ.Controllers
 {
     public class IndexController : Controller
     {
-        public IActionResult Index()
+        
+
+        public IActionResult Index([FromServices]IConfiguration configuracao)
         {
+            var personagemController = new PersonagemController();
+
+            ViewBag.Personagens = new SelectList(personagemController.ObterPersonagens(configuracao), "Id", "Nome");
             return View();
         }
-
+        
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
