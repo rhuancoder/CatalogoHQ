@@ -3,13 +3,50 @@
     ViewData["Title"] = "Index";
     Personagem personagem = (Personagem)ViewBag.Personagem;
 }
-
-<div>
-    <div class="editor-label">
-        Personagens
+<br />
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label for="Personagens">Personagem</label>
+                        @Html.DropDownList("Personagens", null, string.Empty, new { @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        <label for="Quadrinhos">História</label>
+                        @Html.DropDownList("Personagens", null, string.Empty, new { @class = "form-control" })
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-6">
+                            <button id="limpar" class="btn btn-light mb-2 btn-block">Limpar</button>
+                        </div>
+                        <div class="col-md-6">
+                            <button id="enviar" class="btn btn-primary mb-2 btn-block">Enviar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="panel panel-default">
+                <div class="panel-heading">Nome do personagem</div>
+                <div class="panel-body">
+                    Descrição do Personagen
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="editor-field">
-        @Html.DropDownList("Personagens")
+    <br clear="all" />
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">Nome da HQ</div>
+                <div class="panel-body">
+                    Descrição da HQ
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

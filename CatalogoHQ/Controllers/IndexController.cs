@@ -9,16 +9,15 @@ namespace CatalogoHQ.Controllers
 {
     public class IndexController : Controller
     {
-        
 
         public IActionResult Index([FromServices]IConfiguration configuracao, [FromServices]IMemoryCache cache)
         {
             var personagemController = new PersonagemController();
 
-            ViewBag.Personagens = new SelectList(personagemController.ObterPersonagens(configuracao, cache), "Id", "Nome");
+            ViewBag.Personagens = new SelectList(personagemController.ObterPersonagens(configuracao, cache), "Id", "Nome", null);
             return View();
         }
-        
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
