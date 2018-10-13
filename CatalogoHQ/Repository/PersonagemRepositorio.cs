@@ -1,5 +1,6 @@
 ﻿using CatalogoHQ.Controllers;
 using CatalogoHQ.Models;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using System;
@@ -44,39 +45,47 @@ namespace CatalogoHQ.Repository
             return resultado.data.total;
         }
 
-        public List<Personagem> ObterPersonagens(IConfiguration configuracao)
+        public List<Personagem> ObterPersonagens(IConfiguration configuracao, IMemoryCache cache)
         {
+            var total = ObterTotalPersonagens(configuracao);
+            var max = (int)Enums.Enums.LimitePersonagem.Maximo;
             var lsPersonagens = new List<Personagem>();
 
-            var total = ObterTotalPersonagens(configuracao);
-
-            while (total > lsPersonagens.Count)
-            {
-                var max = (int)Enums.Enums.LimitePersonagem.Maximo;
-
-                HttpResponseMessage response = cliente.GetAsync(
-                    configuracao.GetSection("MarvelComicsAPI:RequestURL").Value +
-                    $"characters?ts={ts}&apikey={chavePublica}&hash={hash}&limit={max}&offset={lsPersonagens.Count}").Result;
-
-                response.EnsureSuccessStatusCode();
-                string conteudo = response.Content.ReadAsStringAsync().Result;
-
-                dynamic resultado = JsonConvert.DeserializeObject(conteudo);
-
-                for (var x = 0; x < (int)resultado.data.count; x++)
+            // Add cache
+            var personagens = cache.GetOrCreate(
+                "ListaPersonagens", context =>
                 {
-                    Personagem personagem = new Personagem
+                    // Expira em 10h - max recomendado pela Marvel 24h
+                    context.SetAbsoluteExpiration(TimeSpan.FromHours(10));
+                    context.SetPriority(CacheItemPriority.High);
+
+                    while (total > lsPersonagens.Count)
                     {
-                        Id = resultado.data.results[x].id,
-                        Nome = resultado.data.results[x].name
-                    };
+                        HttpResponseMessage response = cliente.GetAsync(
+                            configuracao.GetSection("MarvelComicsAPI:RequestURL").Value +
+                            $"characters?ts={ts}&apikey={chavePublica}&hash={hash}&limit={max}&offset={lsPersonagens.Count}").Result;
 
-                    lsPersonagens.Add(personagem);
-                }
+                        response.EnsureSuccessStatusCode();
+                        string conteudo = response.Content.ReadAsStringAsync().Result;
 
-            }
+                        dynamic resultado = JsonConvert.DeserializeObject(conteudo);
 
-            return lsPersonagens;
+                        for (var x = 0; x < (int)resultado.data.count; x++)
+                        {
+                            Personagem personagem = new Personagem
+                            {
+                                Id = resultado.data.results[x].id,
+                                Nome = resultado.data.results[x].name
+                            };
+
+                            lsPersonagens.Add(personagem);
+                        }
+
+                    }
+                    return lsPersonagens;
+                });
+
+            return personagens;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using CatalogoHQ.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using System.Diagnostics;
 
@@ -10,11 +11,11 @@ namespace CatalogoHQ.Controllers
     {
         
 
-        public IActionResult Index([FromServices]IConfiguration configuracao)
+        public IActionResult Index([FromServices]IConfiguration configuracao, [FromServices]IMemoryCache cache)
         {
             var personagemController = new PersonagemController();
 
-            ViewBag.Personagens = new SelectList(personagemController.ObterPersonagens(configuracao), "Id", "Nome");
+            ViewBag.Personagens = new SelectList(personagemController.ObterPersonagens(configuracao, cache), "Id", "Nome");
             return View();
         }
         
