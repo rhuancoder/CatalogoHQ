@@ -21,5 +21,12 @@ namespace CatalogoHQ.Controllers
 
             return repositorio.ObterPersonagens(configuracao, cache);
         }
+
+        public Personagem ObterPersonagem(IConfiguration configuracao, int id)
+        {
+            var repositorio = new PersonagemRepositorio(configuracao);
+
+            return repositorio.ObterPersonagem(configuracao, id);
+        }
     }
 }

@@ -15,7 +15,7 @@
                     </div>
                     <div class="form-group">
                         <label for="Quadrinhos">História</label>
-                        @Html.DropDownList("Personagens", null, string.Empty, new { @class = "form-control" })
+                        @Html.DropDownList("Quadrinhos", new SelectList(Enumerable.Empty<SelectListItem>()), new { @class = "form-control" })
                     </div>
                     <div class="form-group">
                         <div class="col-md-6">
@@ -28,11 +28,18 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-8">
+        <div class="col-md-8" id="painelPersonagem">
             <div class="panel panel-default">
-                <div class="panel-heading">Nome do personagem</div>
+                <div class="panel-heading"><div id="nomePersonagem"></div></div>
                 <div class="panel-body">
-                    Descrição do Personagen
+                    <div class="media">
+                        <div class="media-left media-middle">
+                            <div id="imgPersonagem"></div>
+                        </div>
+                        <div class="media-body">
+                            <div id="descPersonagem"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -49,4 +56,53 @@
         </div>
     </div>
 </div>
+<script type="text/javascript">
 
+    $(document).ready(function () {
+        ($('#Personagens').val() === "") && $('#painelPersonagem').hide();
+
+        var personagem = null;
+
+        $('#Personagens').change(() => {
+            var idPersonagem = $('#Personagens').val();
+
+            if (idPersonagem === "") {
+                $('#painelPersonagem').hide();
+            }
+            else {
+
+                $.ajax("/Index/RetornaPersonagem", {
+                    dataType: "JSON",
+                    type: "GET",
+                    data: { id: idPersonagem },
+                    success: (json) => {
+                        personagem = new Personagem(json.Id, json.Nome, json.Descricao, json.ImagemUrl, json.WikiUrl);
+
+                        loadPersonagem(personagem);
+                    }
+                });
+            }
+        });
+    });
+
+    let loadPersonagem = (personagem) => {
+        var semDescricao = "Personagem sem descrição.";
+
+        $('#nomePersonagem').html(personagem.Nome);
+        $('#imgPersonagem').html('<img src="' + personagem.ImagemUrl + '"></img>');
+        $('#descPersonagem').html((personagem.Descricao === "") ? semDescricao : personagem.Descricao);
+
+        (personagem != null) && $('#painelPersonagem').show();
+    };
+
+    class Personagem {
+        constructor(id, nome, descricao, imagemUrl, wikiUrl) {
+            this.Id = id;
+            this.Nome = nome;
+            this.Descricao = descricao;
+            this.ImagemUrl = imagemUrl;
+            this.WikiUrl = wikiUrl;
+        }
+    }
+
+</script>

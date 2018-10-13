@@ -62,8 +62,8 @@ namespace CatalogoHQ.Repository
                     while (total > lsPersonagens.Count)
                     {
                         HttpResponseMessage response = cliente.GetAsync(
-                            configuracao.GetSection("MarvelComicsAPI:RequestURL").Value +
-                            $"characters?ts={ts}&apikey={chavePublica}&hash={hash}&limit={max}&offset={lsPersonagens.Count}").Result;
+                                configuracao.GetSection("MarvelComicsAPI:RequestURL").Value +
+                                $"characters?ts={ts}&apikey={chavePublica}&hash={hash}&limit={max}&offset={lsPersonagens.Count}").Result;
 
                         response.EnsureSuccessStatusCode();
                         string conteudo = response.Content.ReadAsStringAsync().Result;
@@ -86,6 +86,29 @@ namespace CatalogoHQ.Repository
                 });
 
             return personagens;
+        }
+
+        public Personagem ObterPersonagem(IConfiguration configuracao, int id)
+        {
+            HttpResponseMessage reposta = cliente.GetAsync(
+                configuracao.GetSection("MarvelComicsAPI:RequestURL").Value +
+                $"characters?ts={ts}&apikey={chavePublica}&hash={hash}&" + $"id={id}").Result;
+
+            reposta.EnsureSuccessStatusCode();
+            string conteudo = reposta.Content.ReadAsStringAsync().Result;
+
+            dynamic resultado = JsonConvert.DeserializeObject(conteudo);
+
+            Personagem personagem = new Personagem
+            {
+                Id = resultado.data.results[0].id,
+                Nome = resultado.data.results[0].name,
+                Descricao = resultado.data.results[0].description,
+                ImagemUrl = resultado.data.results[0].thumbnail.path + "/portrait_xlarge." + resultado.data.results[0].thumbnail.extension,
+                WikiUrl = resultado.data.results[0].urls[1].url
+            };
+
+            return personagem;
         }
     }
 }
