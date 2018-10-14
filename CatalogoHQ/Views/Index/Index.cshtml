@@ -1,7 +1,6 @@
 ﻿
 @{
     ViewData["Title"] = "Index";
-    Personagem personagem = (Personagem)ViewBag.Personagem;
 }
 <br />
 <div class="container">
@@ -10,12 +9,12 @@
             <div class="panel panel-default">
                 <div class="panel-body">
                     <div class="form-group">
-                        <label for="Personagens">Personagem</label>
-                        @Html.DropDownList("Personagens", null, string.Empty, new { @class = "form-control" })
+                        <label for="personagens">Personagem</label>
+                        @Html.DropDownList("personagens", null, string.Empty, new { @class = "form-control" })
                     </div>
                     <div class="form-group">
-                        <label for="Quadrinhos">História</label>
-                        @Html.DropDownList("Quadrinhos", new SelectList(Enumerable.Empty<SelectListItem>()), new { @class = "form-control" })
+                        <label for="Quadrinhos">História em quadrinhos</label>
+                        @Html.DropDownList("quadrinhos", new SelectList(Enumerable.Empty<SelectListItem>()), new { @class = "form-control" })
                     </div>
                     <div class="form-group">
                         <div class="col-md-6">
@@ -30,13 +29,14 @@
         </div>
         <div class="col-md-8" id="painelPersonagem">
             <div class="panel panel-default">
-                <div class="panel-heading"><div id="nomePersonagem"></div></div>
+                <div class="panel-heading">Personagem</div>
                 <div class="panel-body">
                     <div class="media">
                         <div class="media-left media-middle">
                             <div id="imgPersonagem"></div>
                         </div>
                         <div class="media-body">
+                            <div class="media-heading"><div id="nomePersonagem"></div></div>
                             <div id="descPersonagem"></div>
                         </div>
                     </div>
@@ -46,11 +46,19 @@
     </div>
     <br clear="all" />
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-12" id="painelQuadrinho">
             <div class="panel panel-default">
-                <div class="panel-heading">Nome da HQ</div>
+                <div class="panel-heading">História em quadrinhos</div>
                 <div class="panel-body">
-                    Descrição da HQ
+                    <div class="media">
+                        <div class="media-left media-middle">
+                            <div id="imgQuadrinho"></div>
+                        </div>
+                        <div class="media-body">
+                            <div class="media-heading"><div id="tituloQuadrinho"></div></div>
+                            <div id="descQuadrinho"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -59,14 +67,17 @@
 <script type="text/javascript">
 
     $(document).ready(function () {
-        ($('#Personagens').val() === "") && $('#painelPersonagem').hide();
+        ($('#personagens').val() === "") && $('#painelPersonagem').hide();
+        ($('#quadrinhos').val() === null) && $('#painelQuadrinho').hide();
 
         var personagem = null;
 
-        $('#Personagens').change(() => {
-            var idPersonagem = $('#Personagens').val();
+        $('#personagens').change(() => {
+            $('#painelQuadrinho').hide();
+            $('#quadrinhos').empty();
+            var idPersonagem = $('#personagens').val();
 
-            if (idPersonagem === "") {
+            if (!idPersonagem) {
                 $('#painelPersonagem').hide();
             }
             else {
@@ -76,32 +87,99 @@
                     type: "GET",
                     data: { id: idPersonagem },
                     success: (json) => {
-                        personagem = new Personagem(json.Id, json.Nome, json.Descricao, json.ImagemUrl, json.WikiUrl);
+                        personagem = new Personagem(json.Id, json.Nome, json.Descricao, json.ImagemUrl);
 
-                        loadPersonagem(personagem);
+                        carregaPersonagem(personagem);
+                    }
+                });
+
+                $.ajax("/Index/RetornaListaQuadrinhos", {
+                    dataType: "JSON",
+                    type: "GET",
+                    data: { idPersonagem: idPersonagem },
+                    success: (json) => {
+                        carregaDropdownQuadrinhos(json);
                     }
                 });
             }
         });
+
+        $('#enviar').click(() => {
+            var idQuadrinho = $('#quadrinhos').val();
+
+            if (!idQuadrinho) {
+                $('#painelQuadrinho').hide();
+            }
+            else {
+                $.ajax("Index/RetornaQuadrinho", {
+                    dataType: "JSON",
+                    type: "GET",
+                    data: { id: idQuadrinho },
+                    success: (json) => {
+                        quadrinho = new Quadrinho(json.Id, json.Titulo, json.Descricao, json.ImagemUrl);
+
+                        carregaQuadrinho(quadrinho);
+                    }
+                });
+            }
+        });
+
+        $('#limpar').click(() => {
+            limparTela();
+        });
+
     });
 
-    let loadPersonagem = (personagem) => {
+    let carregaPersonagem = (personagem) => {
         var semDescricao = "Personagem sem descrição.";
 
-        $('#nomePersonagem').html(personagem.Nome);
-        $('#imgPersonagem').html('<img src="' + personagem.ImagemUrl + '"></img>');
-        $('#descPersonagem').html((personagem.Descricao === "") ? semDescricao : personagem.Descricao);
+        $('#nomePersonagem').html('<h4>' + personagem.Nome + '<h4>');
+        $('#imgPersonagem').html('<img src="' + personagem.ImagemUrl.replace("http", "https") + '"></img>');
+        $('#descPersonagem').html((!personagem.Descricao) ? semDescricao : personagem.Descricao);
 
         (personagem != null) && $('#painelPersonagem').show();
     };
 
+    let carregaDropdownQuadrinhos = (json) => {
+        $('#quadrinhos').empty();
+        $('#quadrinhos').append('<option value=""></option>');
+        for (var i = 0; i < json.length; i++) {
+            $('#quadrinhos').append('<option value="' + json[i].Id + '">' + json[i].Titulo + '</option>');
+        }
+    };
+
+    let carregaQuadrinho = (quadrinho) => {
+        var semDescricao = "Quadrinho sem descrição.";
+
+        $('#tituloQuadrinho').html('<h4>' + quadrinho.Titulo + '</h4>');
+        $('#imgQuadrinho').html('<img src="' + quadrinho.ImagemUrl.replace("http", "https") + '"></img>');
+        $('#descQuadrinho').html((!quadrinho.Descricao) ? semDescricao : quadrinho.Descricao);
+
+        (quadrinho != null) && $('#painelQuadrinho').show();
+    };
+
+    let limparTela = () => {
+        $('#personagens').val("");
+        $('#quadrinhos').empty();
+        $('#painelPersonagem').hide();
+        $('#painelQuadrinho').hide();
+    }
+
     class Personagem {
-        constructor(id, nome, descricao, imagemUrl, wikiUrl) {
+        constructor(id, nome, descricao, imagemUrl) {
             this.Id = id;
             this.Nome = nome;
             this.Descricao = descricao;
             this.ImagemUrl = imagemUrl;
-            this.WikiUrl = wikiUrl;
+        }
+    }
+
+    class Quadrinho {
+        constructor(id, titulo, descricao, imagemUrl) {
+            this.Id = id;
+            this.Titulo = titulo;
+            this.Descricao = descricao;
+            this.ImagemUrl = imagemUrl;
         }
     }
 

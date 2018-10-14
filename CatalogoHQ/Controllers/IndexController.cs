@@ -14,8 +14,8 @@ namespace CatalogoHQ.Controllers
         public IActionResult Index([FromServices]IConfiguration configuracao, [FromServices]IMemoryCache cache)
         {
             var personagemController = new PersonagemController();
+            ViewBag.personagens = new SelectList(personagemController.ObterPersonagens(configuracao, cache), "Id", "Nome", null);
 
-            ViewBag.Personagens = new SelectList(personagemController.ObterPersonagens(configuracao, cache), "Id", "Nome", null);
             return View();
         }
 
@@ -26,6 +26,22 @@ namespace CatalogoHQ.Controllers
             var personagem = personagemController.ObterPersonagem(configuracao, id);
 
             return JsonConvert.SerializeObject(personagem);
+        }
+
+        public string RetornaListaQuadrinhos([FromServices]IConfiguration configuracao, int idPersonagem)
+        {
+            var quadrinhoController = new QuadrinhoController();
+            var quadrinho = quadrinhoController.ObterQuadrinhos(configuracao, idPersonagem);
+
+            return JsonConvert.SerializeObject(quadrinho);
+        }
+
+        public string RetornaQuadrinho([FromServices]IConfiguration configuracao, int id)
+        {
+            var quadrinhoController = new QuadrinhoController();
+            var quadrinho = quadrinhoController.ObterQuadrinho(configuracao, id);
+
+            return JsonConvert.SerializeObject(quadrinho);
         }
         #endregion
 

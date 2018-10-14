@@ -6,5 +6,10 @@
         {
             Maximo = 100
         }
+
+        public enum LimiteQuadrinho
+        {
+            Maximo = 100
+        }
     }
 }

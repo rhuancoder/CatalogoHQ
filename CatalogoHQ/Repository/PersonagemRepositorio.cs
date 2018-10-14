@@ -61,12 +61,12 @@ namespace CatalogoHQ.Repository
 
                     while (total > lsPersonagens.Count)
                     {
-                        HttpResponseMessage response = cliente.GetAsync(
+                        HttpResponseMessage resposta = cliente.GetAsync(
                                 configuracao.GetSection("MarvelComicsAPI:RequestURL").Value +
                                 $"characters?ts={ts}&apikey={chavePublica}&hash={hash}&limit={max}&offset={lsPersonagens.Count}").Result;
 
-                        response.EnsureSuccessStatusCode();
-                        string conteudo = response.Content.ReadAsStringAsync().Result;
+                        resposta.EnsureSuccessStatusCode();
+                        string conteudo = resposta.Content.ReadAsStringAsync().Result;
 
                         dynamic resultado = JsonConvert.DeserializeObject(conteudo);
 
@@ -92,7 +92,7 @@ namespace CatalogoHQ.Repository
         {
             HttpResponseMessage reposta = cliente.GetAsync(
                 configuracao.GetSection("MarvelComicsAPI:RequestURL").Value +
-                $"characters?ts={ts}&apikey={chavePublica}&hash={hash}&" + $"id={id}").Result;
+                $"characters/{id}?ts={ts}&apikey={chavePublica}&hash={hash}").Result;
 
             reposta.EnsureSuccessStatusCode();
             string conteudo = reposta.Content.ReadAsStringAsync().Result;
@@ -104,8 +104,7 @@ namespace CatalogoHQ.Repository
                 Id = resultado.data.results[0].id,
                 Nome = resultado.data.results[0].name,
                 Descricao = resultado.data.results[0].description,
-                ImagemUrl = resultado.data.results[0].thumbnail.path + "/portrait_xlarge." + resultado.data.results[0].thumbnail.extension,
-                WikiUrl = resultado.data.results[0].urls[1].url
+                ImagemUrl = resultado.data.results[0].thumbnail.path + "/portrait_xlarge." + resultado.data.results[0].thumbnail.extension
             };
 
             return personagem;
