@@ -3,6 +3,7 @@
     ViewData["Title"] = "Index";
 }
 <br />
+<div id="error"></div>
 <div class="container">
     <div class="row">
         <div class="col-md-4">
@@ -13,7 +14,7 @@
                         @Html.DropDownList("personagens", null, string.Empty, new { @class = "form-control" })
                     </div>
                     <div class="form-group">
-                        <label for="Quadrinhos">História em quadrinhos</label>
+                        <label for="quadrinhos">História em quadrinhos</label>
                         @Html.DropDownList("quadrinhos", new SelectList(Enumerable.Empty<SelectListItem>()), new { @class = "form-control" })
                     </div>
                     <div class="form-group">
@@ -29,9 +30,9 @@
         </div>
         <div class="col-md-8" id="painelPersonagem">
             <div class="panel panel-default">
-                <div class="panel-heading">Personagem</div>
-                <div class="panel-body">
-                    <div class="media">
+                <div class="panel-heading"><strong>Personagem</strong></div>
+                <div class="panel-body" id="pbPersonagem">
+                    <div class="media" id="mediaPersonagem">
                         <div class="media-left media-middle">
                             <div id="imgPersonagem"></div>
                         </div>
@@ -48,9 +49,9 @@
     <div class="row">
         <div class="col-md-12" id="painelQuadrinho">
             <div class="panel panel-default">
-                <div class="panel-heading">História em quadrinhos</div>
-                <div class="panel-body">
-                    <div class="media">
+                <div class="panel-heading"><strong>História em quadrinhos</strong></div>
+                <div class="panel-body" id="pbQuadrinho">
+                    <div class="media" id="mediaQuadrinho">
                         <div class="media-left media-middle">
                             <div id="imgQuadrinho"></div>
                         </div>
@@ -67,6 +68,8 @@
 <script type="text/javascript">
 
     $(document).ready(function () {
+        $('#error').hide();
+        $('#error').addClass('alert alert-danger');
         ($('#personagens').val() === "") && $('#painelPersonagem').hide();
         ($('#quadrinhos').val() === null) && $('#painelQuadrinho').hide();
 
@@ -81,15 +84,27 @@
                 $('#painelPersonagem').hide();
             }
             else {
-
                 $.ajax("/Index/RetornaPersonagem", {
                     dataType: "JSON",
                     type: "GET",
                     data: { id: idPersonagem },
+                    beforeSend: () => {
+                        $('#mediaPersonagem').hide();
+                        $('#pbPersonagem').addClass('loader center-block');
+                    },
+                    complete: () => {
+                        $('#pbPersonagem').removeClass('loader center-block');
+                        $('#mediaPersonagem').show();
+                    },
                     success: (json) => {
                         personagem = new Personagem(json.Id, json.Nome, json.Descricao, json.ImagemUrl);
 
                         carregaPersonagem(personagem);
+                    },
+                    error: (err) => {
+                        $('#error').html('<span class="glyphicon glyphicon-remove" aria-hidden="true"></span><text> Não foi possível carregar o personagem, por favor tente novamente mais tarde.</text>');
+                        $('#error').show();
+                        console.log(err);
                     }
                 });
 
@@ -99,6 +114,11 @@
                     data: { idPersonagem: idPersonagem },
                     success: (json) => {
                         carregaDropdownQuadrinhos(json);
+                    },
+                    error: (err) => {
+                        $('#error').html('<span class="glyphicon glyphicon-remove" aria-hidden="true"></span><text> Não foi possível carregar a lista de história em quadrinhos, por favor tente novamente mais tarde.</text>');
+                        $('#error').show();
+                        console.log(err);
                     }
                 });
             }
@@ -106,7 +126,7 @@
 
         $('#enviar').click(() => {
             var idQuadrinho = $('#quadrinhos').val();
-
+            $('#quadrinhos').empty();
             if (!idQuadrinho) {
                 $('#painelQuadrinho').hide();
             }
@@ -115,10 +135,23 @@
                     dataType: "JSON",
                     type: "GET",
                     data: { id: idQuadrinho },
+                    beforeSend: () => {
+                        $('#mediaQuadrinho').hide();
+                        $('#pbQuadrinho').addClass('loader center-block');
+                    },
+                    complete: () => {
+                        $('#pbQuadrinho').removeClass('loader center-block');
+                        $('#mediaQuadrinho').show();
+                    },
                     success: (json) => {
                         quadrinho = new Quadrinho(json.Id, json.Titulo, json.Descricao, json.ImagemUrl);
 
                         carregaQuadrinho(quadrinho);
+                    },
+                    error: (err) => {
+                        $('#error').html('<span class="glyphicon glyphicon-remove" aria-hidden="true"></span><text> Não foi possível carregar a história em quadrinhos, por favor tente novamente mais tarde.</text>');
+                        $('#error').show();
+                        console.log(err);
                     }
                 });
             }
@@ -131,9 +164,9 @@
     });
 
     let carregaPersonagem = (personagem) => {
+        $('#error').hide();
         var semDescricao = "Personagem sem descrição.";
-
-        $('#nomePersonagem').html('<h4>' + personagem.Nome + '<h4>');
+        $('#nomePersonagem').html('<h4>' + personagem.Nome + '</h4>');
         $('#imgPersonagem').html('<img src="' + personagem.ImagemUrl.replace("http", "https") + '"></img>');
         $('#descPersonagem').html((!personagem.Descricao) ? semDescricao : personagem.Descricao);
 
@@ -141,6 +174,7 @@
     };
 
     let carregaDropdownQuadrinhos = (json) => {
+        $('#error').hide();
         $('#quadrinhos').empty();
         $('#quadrinhos').append('<option value=""></option>');
         for (var i = 0; i < json.length; i++) {
@@ -149,8 +183,8 @@
     };
 
     let carregaQuadrinho = (quadrinho) => {
+        $('#error').hide();
         var semDescricao = "Quadrinho sem descrição.";
-
         $('#tituloQuadrinho').html('<h4>' + quadrinho.Titulo + '</h4>');
         $('#imgQuadrinho').html('<img src="' + quadrinho.ImagemUrl.replace("http", "https") + '"></img>');
         $('#descQuadrinho').html((!quadrinho.Descricao) ? semDescricao : quadrinho.Descricao);
@@ -163,6 +197,7 @@
         $('#quadrinhos').empty();
         $('#painelPersonagem').hide();
         $('#painelQuadrinho').hide();
+        $('#error').hide();
     }
 
     class Personagem {
