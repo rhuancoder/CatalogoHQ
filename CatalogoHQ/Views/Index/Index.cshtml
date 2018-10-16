@@ -88,45 +88,7 @@
                 $('#listaQuadrinhos').hide();
             }
             else {
-                $.ajax("/Index/RetornaPersonagem", {
-                    dataType: "JSON",
-                    type: "GET",
-                    data: { id: idPersonagem },
-                    beforeSend: () => {
-                        $('#mediaPersonagem').hide();
-                        $('#pbPersonagem').addClass('loader center-block');
-                    },
-                    complete: () => {
-                        $('#pbPersonagem').removeClass('loader center-block');
-                        $('#mediaPersonagem').show();
-                    },
-                    success: (json) => {
-                        personagem = new Personagem(json.Id, json.Nome, json.Descricao, json.ImagemUrl);
-
-                        carregaPersonagem(personagem);
-                    },
-                    error: (err) => {
-                        $('#error').html('<span class="glyphicon glyphicon-remove" aria-hidden="true"></span><text> Não foi possível carregar o personagem, por favor tente novamente mais tarde.</text>');
-                        $('#error').show();
-                        console.log(err);
-                    }
-                });
-
-                $.ajax("/Index/RetornaListaQuadrinhos", {
-                    dataType: "JSON",
-                    type: "GET",
-                    data: { idPersonagem: idPersonagem },
-                    success: (json) => {
-                        carregaDropdownQuadrinhos(json);
-                    },
-                    error: (err) => {
-                        $('#error').html('<span class="glyphicon glyphicon-remove" aria-hidden="true"></span><text> Não foi possível carregar a lista de história em quadrinhos, por favor tente novamente mais tarde.</text>');
-                        $('#error').show();
-                        console.log(err);
-                    }
-                });
-
-                $('#listaQuadrinhos').show();
+                retornaPersonagem(idPersonagem, (x) => { retornaListaQuadrinhos(x) });
             }
         });
 
@@ -168,7 +130,46 @@
 
     });
 
-    let carregaPersonagem = (personagem) => {
+    var retornaListaQuadrinhos = (idPersonagem) => {
+        $.ajax({
+            url: "/Index/RetornaListaQuadrinhos",
+            dataType: "JSON",
+            data: { idPersonagem: idPersonagem },
+            success: (json) => {
+                carregaDropdownQuadrinhos(idPersonagem, json);
+            }
+        });
+    }; 
+
+    var retornaPersonagem = (idPersonagem, callback) => {
+        $.ajax("/Index/RetornaPersonagem", {
+            dataType: "JSON",
+            type: "GET",
+            data: { id: idPersonagem },
+            beforeSend: () => {
+                $('#mediaPersonagem').hide();
+                $('#pbPersonagem').addClass('loader center-block');
+            },
+            complete: () => {
+                $('#pbPersonagem').removeClass('loader center-block');
+                $('#mediaPersonagem').show();
+            },
+            success: (json) => {
+                personagem = new Personagem(json.Id, json.Nome, json.Descricao, json.ImagemUrl);
+
+                carregaPersonagem(personagem);
+                if (callback)
+                    callback(personagem.Id);
+            },
+            error: (err) => {
+                $('#error').html('<span class="glyphicon glyphicon-remove" aria-hidden="true"></span><text> Não foi possível carregar o personagem, por favor tente novamente mais tarde.</text>');
+                $('#error').show();
+                console.log(err);
+            }
+        });
+    }; 
+
+    var carregaPersonagem = (personagem) => {
         $('#error').hide();
         var semDescricao = "Personagem sem descrição.";
         $('#nomePersonagem').html('<h4>' + personagem.Nome + '</h4>');
@@ -178,16 +179,20 @@
         (personagem != null) && $('#painelPersonagem').show();
     };
 
-    let carregaDropdownQuadrinhos = (json) => {
-        $('#error').hide();
-        $('#quadrinhos').empty();
-        $('#quadrinhos').append('<option value=""></option>');
-        for (var i = 0; i < json.length; i++) {
-            $('#quadrinhos').append('<option value="' + json[i].Id + '">' + json[i].Titulo + '</option>');
+    var carregaDropdownQuadrinhos = (idPersonagem, json) => {
+
+        if (idPersonagem == $('#personagens').val()) {
+            $('#error').hide();
+            $('#quadrinhos').empty();
+            $('#quadrinhos').append('<option value=""></option>');
+            for (var i = 0; i < json.length; i++) {
+                $('#quadrinhos').append('<option value="' + json[i].Id + '">' + json[i].Titulo + '</option>');
+            }
+            $('#listaQuadrinhos').show();
         }
     };
 
-    let carregaQuadrinho = (quadrinho) => {
+    var carregaQuadrinho = (quadrinho) => {
         $('#error').hide();
         var semDescricao = "Quadrinho sem descrição.";
         $('#tituloQuadrinho').html('<h4>' + quadrinho.Titulo + '</h4>');
@@ -199,7 +204,7 @@
         }
     };
 
-    let limparTela = () => {
+    var limparTela = () => {
         $('#personagens').val("");
         $('#quadrinhos').empty();
         $('#painelPersonagem').hide();
