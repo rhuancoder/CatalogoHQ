@@ -194,7 +194,10 @@
         $('#imgQuadrinho').html('<img src="' + quadrinho.ImagemUrl.replace("http", "https") + '"></img>');
         $('#descQuadrinho').html((!quadrinho.Descricao) ? semDescricao : quadrinho.Descricao);
 
-        (quadrinho != null) && $('#painelQuadrinho').show();
+        if (quadrinho != null) {
+            $('.footer').css({ "position": "relative" });
+            $('#painelQuadrinho').show();
+        }
     };
 
     let limparTela = () => {
