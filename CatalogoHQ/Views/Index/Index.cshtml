@@ -134,9 +134,15 @@
         $.ajax({
             url: "/Index/RetornaListaQuadrinhos",
             dataType: "JSON",
+            type: "GET",
             data: { idPersonagem: idPersonagem },
             success: (json) => {
                 carregaDropdownQuadrinhos(idPersonagem, json);
+            },
+            error: (err) => {
+                $('#error').html('<span class="glyphicon glyphicon-remove" aria-hidden="true"></span><text> Não foi possível carregar a lista de história em quadrinhos, por favor tente novamente mais tarde.</text>');
+                $('#error').show();
+                console.log(err);
             }
         });
     }; 
