@@ -185,7 +185,7 @@
 
     var carregaDropdownQuadrinhos = (idPersonagem, json) => {
 
-        if (idPersonagem == $('#personagens').val()) {
+        if (idPersonagem == $('#personagens').val() && json.length > 0) {
             $('#error').hide();
             $('#quadrinhos').empty();
             $('#quadrinhos').append('<option value=""></option>');
