@@ -109,9 +109,7 @@
                         $('#mediaQuadrinho').show();
                     },
                     success: (json) => {
-                        quadrinho = new Quadrinho(json.Id, json.Titulo, json.Descricao, json.ImagemUrl);
-
-                        carregaQuadrinho(quadrinho);
+                        carregaQuadrinho(json);
                     },
                     error: (err) => {
                         $('#error').html('<span class="glyphicon glyphicon-remove" aria-hidden="true"></span><text> Não foi possível carregar a história em quadrinhos, por favor tente novamente mais tarde.</text>');
@@ -143,7 +141,7 @@
                 console.log(err);
             }
         });
-    }; 
+    };
 
     var retornaPersonagem = (idPersonagem, callback) => {
         $.ajax("/Index/RetornaPersonagem", {
@@ -159,11 +157,10 @@
                 $('#mediaPersonagem').show();
             },
             success: (json) => {
-                personagem = new Personagem(json.Id, json.Nome, json.Descricao, json.ImagemUrl);
+                carregaPersonagem(json);
 
-                carregaPersonagem(personagem);
                 if (callback)
-                    callback(personagem.Id);
+                    callback(json.Id);
             },
             error: (err) => {
                 $('#error').html('<span class="glyphicon glyphicon-remove" aria-hidden="true"></span><text> Não foi possível carregar o personagem, por favor tente novamente mais tarde.</text>');
@@ -171,7 +168,7 @@
                 console.log(err);
             }
         });
-    }; 
+    };
 
     var carregaPersonagem = (personagem) => {
         $('#error').hide();
@@ -184,7 +181,6 @@
     };
 
     var carregaDropdownQuadrinhos = (idPersonagem, json) => {
-
         if (idPersonagem == $('#personagens').val() && json.length > 0) {
             $('#error').hide();
             $('#quadrinhos').empty();
@@ -214,24 +210,6 @@
         $('#painelPersonagem').hide();
         $('#painelQuadrinho').hide();
         $('#error').hide();
-    }
-
-    class Personagem {
-        constructor(id, nome, descricao, imagemUrl) {
-            this.Id = id;
-            this.Nome = nome;
-            this.Descricao = descricao;
-            this.ImagemUrl = imagemUrl;
-        }
-    }
-
-    class Quadrinho {
-        constructor(id, titulo, descricao, imagemUrl) {
-            this.Id = id;
-            this.Titulo = titulo;
-            this.Descricao = descricao;
-            this.ImagemUrl = imagemUrl;
-        }
     }
 
 </script>
